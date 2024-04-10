@@ -1,16 +1,19 @@
 from pythonping import ping
-import statistics
+from pythonping.executor import Response
 from matplotlib import pyplot
-from queue import Queue, Full
+from queue import Queue
 
 
 def ping_wrapper():
-    return [r for r in ping("google.com", count=1, interval=1)][0].time_elapsed_ms
+    response: Response = [r for r in ping("google.com", count=1, interval=1, timeout=1)][0]
+    return response.time_elapsed_ms if response.success else 0
 
 
 def main():
-    response_times = Queue(maxsize=120)
-    # pyplot.plot(response_times)
+    maxsize = 120
+    response_times = Queue(maxsize=maxsize)
+    for _ in range(maxsize):
+            response_times.put(0)
     pyplot.gca().set(title="Ping")
     pyplot.ion()
     pyplot.show()
@@ -21,8 +24,6 @@ def main():
             response_times.get()
         response_times.put(response_time)
 
-        # avg = statistics.mean(list(response_times.queue))
-        # print(response_time, avg)
 
         pyplot.clf()
         pyplot.ylim(0, 300)
