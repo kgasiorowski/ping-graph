@@ -19,15 +19,22 @@ def main():
     pyplot.show()
 
     while True:
-        response_time = ping_wrapper()
+        try:
+            response_time = ping_wrapper()
+        except RuntimeError:
+            print("There was a runtime error. Check your connection, it may have gone down for good.")
+            exit(1)
+
         if response_times.full():
             response_times.get()
         response_times.put(response_time)
 
+        max_y = int(max(response_times.queue) * 1.1)
+        min_y = int(min(response_times.queue) / 1.1)
 
         pyplot.clf()
-        pyplot.ylim(0, 300)
-        pyplot.yticks([i for i in range(0, 301, 25)])
+        pyplot.ylim(min_y, max_y)
+        pyplot.yticks([i for i in range(min_y, max_y, int(((max_y-min_y)/10.0)))])
         pyplot.plot(list(response_times.queue))
         pyplot.gca().set(title="Ping", ylabel="ms")
         pyplot.draw()
